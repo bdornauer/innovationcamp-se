@@ -1,0 +1,58 @@
+# Node docker image
+image: node:latest
+
+cache:
+  paths:
+    - node_modules/
+
+stages:
+  - build
+  - test
+  - sonarqube_test
+  - deploy_production
+
+# Load all packages
+Build:
+  stage: build
+  script:
+    - npm install
+
+# Run simple Unit tests:
+Test:
+  stage: test
+  script:
+    - npm install
+    - npm run test
+
+
+# Deploy to production
+Production:
+  image: ruby:latest
+  only:
+    - main #branch
+  stage: deploy_production
+  script:
+    - apt-get update -qy
+    - apt-get install -y ruby-dev
+    - gem install dpl
+    - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_API_KEY
+
+
+#for sonarqube
+sonarqube-check:
+  image: 
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  stage: sonarqube_test
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script: 
+    - sonar-scanner
+  allow_failure: true
+  only:
+    - main # or the name of your main branch
