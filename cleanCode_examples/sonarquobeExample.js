@@ -8,11 +8,12 @@ function add(x, y) {
 }
 
 function mult(x,y){
-    if(true)
-        return x*y;
+    while(true){
+        return true;
+    }
 }
 
-function f(x,y){
+function asdf93kdf83(x,y){
     return 45;
 }
 
